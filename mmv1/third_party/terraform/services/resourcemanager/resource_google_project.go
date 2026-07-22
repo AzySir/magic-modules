@@ -106,15 +106,22 @@ func ResourceGoogleProject() *schema.Resource {
 			"org_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"folder_id"},
-				Description:   `The numeric ID of the organization this project belongs to. Changing this forces a new project to be created.  Only one of org_id or folder_id may be specified. If the org_id is specified then the project is created at the top level. Changing this forces the project to be migrated to the newly specified organization.`,
+				ConflictsWith: []string{"folder_id", "parent_id"},
+				Description:   `The numeric ID of the organization this project belongs to. Changing this forces a new project to be created.  Only one of org_id, folder_id or parent_id may be specified. If the org_id is specified then the project is created at the top level. Changing this forces the project to be migrated to the newly specified organization.`,
 			},
 			"folder_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				StateFunc:     ParseFolderId,
-				ConflictsWith: []string{"org_id"},
-				Description:   `The numeric ID of the folder this project should be created under. Only one of org_id or folder_id may be specified. If the folder_id is specified, then the project is created under the specified folder. Changing this forces the project to be migrated to the newly specified folder.`,
+				ConflictsWith: []string{"org_id", "parent_id"},
+				Description:   `The numeric ID of the folder this project should be created under. Only one of org_id, folder_id or parent_id may be specified. If the folder_id is specified, then the project is created under the specified folder. Changing this forces the project to be migrated to the newly specified folder.`,
+			},
+			"parent_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				StateFunc:     ParseFolderId,
+				ConflictsWith: []string{"org_id", "folder_id"},
+				Description:   `The numeric ID of the folder this project should be created under. Only one of org_id, folder_id or parent_id may be specified. If the folder_id is specified, then the project is created under the specified folder. Changing this forces the project to be migrated to the newly specified folder.`,
 			},
 			"number": {
 				Type:        schema.TypeString,
