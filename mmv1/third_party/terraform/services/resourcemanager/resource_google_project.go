@@ -440,9 +440,16 @@ func PrefixedProject(pid string) string {
 func getParentResourceId(d *schema.ResourceData, p *cloudresourcemanager.Project) error {
 	orgId := d.Get("org_id").(string)
 	folderId := d.Get("folder_id").(string)
+	parentId := d.Get("parent_id").(string)
 
-	if orgId != "" && folderId != "" {
-		return fmt.Errorf("'org_id' and 'folder_id' cannot be both set.")
+	usageCount := 0
+	for _, v := range []string{orgId, folderId, parentId} {
+		if v != "" {
+			usageCount++
+		}
+	}
+	if usageCount > 1 {
+		return fmt.Errorf("only one of 'org_id', 'folder_id', or 'parent_id' can be set")
 	}
 
 	if orgId != "" {
@@ -455,6 +462,13 @@ func getParentResourceId(d *schema.ResourceData, p *cloudresourcemanager.Project
 	if folderId != "" {
 		p.Parent = &cloudresourcemanager.ResourceId{
 			Id:   ParseFolderId(folderId),
+			Type: "folder",
+		}
+	}
+
+	if parentId != "" {
+		p.Parent = &cloudresourcemanager.ResourceId{
+			Id:   ParseFolderId(parentId),
 			Type: "folder",
 		}
 	}
@@ -503,7 +517,7 @@ func resourceGoogleProjectUpdate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	// Project parent has changed
-	if d.HasChange("org_id") || d.HasChange("folder_id") {
+	if d.HasChange("org_id") || d.HasChange("folder_id") || d.HasChange("parent_id") {
 		if err := getParentResourceId(d, p); err != nil {
 			return err
 		}
